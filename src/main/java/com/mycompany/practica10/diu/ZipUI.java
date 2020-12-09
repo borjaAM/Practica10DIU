@@ -8,6 +8,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.swing.SwingWorker;
@@ -15,11 +17,11 @@ import javax.swing.SwingWorker;
 public class ZipUI extends javax.swing.JFrame {
 
     private Tarea tarea;
-    //private final Zip zip;
     private int isComprimed = 1;
     private int progreso = 0;
     public final List<String> files;
     public final String directory;
+    private ZipOutputStream out;
     
     public ZipUI(List<String> files, String directory) {
         initComponents();
@@ -45,7 +47,8 @@ public class ZipUI extends javax.swing.JFrame {
                 File m = new File(directory);
 
                 FileOutputStream dest = new FileOutputStream(directory + ".zip");
-                ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest));
+                out = new ZipOutputStream(new BufferedOutputStream(dest));
+                
                 // Buffer de transferencia para almacenar datos a comprimir
                 byte[] data = new byte[BUFFER_SIZE];
                 Iterator i = files.iterator();
@@ -66,6 +69,7 @@ public class ZipUI extends javax.swing.JFrame {
                     // Cerramos el archivo origen, ya enviado a comprimir
                     origin.close();
                     progreso++;
+                    Thread.sleep(1000);
                 }
                 // Cerramos el archivo zip
                 out.close();
@@ -185,6 +189,14 @@ public class ZipUI extends javax.swing.JFrame {
         isComprimed = -2;
         comenzarButton.setEnabled(true);
         cancelarButton.setEnabled(false);
+        try {
+            out.close();
+            File f = new File(directory+".zip");
+            f.delete();
+        } catch (IOException ex) {
+            Logger.getLogger(ZipUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        this.dispose();
     }//GEN-LAST:event_cancelarButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JProgressBar barraProgreso;
