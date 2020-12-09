@@ -6,11 +6,11 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 public class Interfaz extends javax.swing.JFrame {
 
-    private final JFileChooser fc;
-    private List<String> files = new ArrayList<String>();
+    private final JFileChooser fc; 
     DefaultListModel modeloArchivos = new DefaultListModel();
     
     public Interfaz() {
@@ -203,15 +203,16 @@ public class Interfaz extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void elegirArchivosButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_elegirArchivosButtonActionPerformed
-        modeloArchivos.removeAllElements();
-        fc.showOpenDialog(this);
-        if(JFileChooser.APPROVE_OPTION == 0){
+        int option = fc.showOpenDialog(this);
+        if(JFileChooser.APPROVE_OPTION == option){
+            modeloArchivos.removeAllElements();
             File file = fc.getSelectedFile();
             origenTxtField.setText(file.getPath());
-            for (File filename : file.listFiles()) modeloArchivos.addElement(filename.getPath());
+            for (File filename : file.listFiles()){
+                if(filename.isFile()) modeloArchivos.addElement(filename.getPath());
+            }
             listaArchivos.setModel(modeloArchivos);
         }
-        
     }//GEN-LAST:event_elegirArchivosButtonActionPerformed
 
     private void listaArchivosValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_listaArchivosValueChanged
@@ -221,8 +222,9 @@ public class Interfaz extends javax.swing.JFrame {
             for (int index : selectedIndices) {
                 texto += modeloArchivos.getElementAt(index).toString() + "\n";
                 archivosComprimirjTxtArea.setText(texto);
+                comprimirButton.setEnabled(true);
             }
-            comprimirButton.setEnabled(true);
+            
         }
     }//GEN-LAST:event_listaArchivosValueChanged
 
@@ -233,18 +235,19 @@ public class Interfaz extends javax.swing.JFrame {
     }//GEN-LAST:event_quitarSeleccionadosButtonActionPerformed
 
     private void comprimirButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comprimirButtonActionPerformed
-        fc.showSaveDialog(this);
-        if(JFileChooser.APPROVE_OPTION == 0) {
-            crearZip(origenTxtField.getText());
-            destinoTxtField.setText(fc.getSelectedFile().getParent());
+        int option = fc.showSaveDialog(this);
+        if(JFileChooser.APPROVE_OPTION == option) {
+            crearZip(fc.getSelectedFile().getPath());
+            destinoTxtField.setText(fc.getSelectedFile().getPath());
         }
     }//GEN-LAST:event_comprimirButtonActionPerformed
 
     private void crearZip(String directory) {
+        List<String> files = new ArrayList<String>();
         String[] filesToCompress = archivosComprimirjTxtArea.getText().split("\n");
         files.addAll(Arrays.asList(filesToCompress));
-        Zip zip = new Zip(files, directory);
-        ZipUI zipUI = new ZipUI(zip);
+        //Zip zip = new Zip(files, directory);
+        ZipUI zipUI = new ZipUI(files, directory);
         zipUI.setVisible(true);
     }
 

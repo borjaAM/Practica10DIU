@@ -1,29 +1,90 @@
 package com.mycompany.practica10.diu;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import javax.swing.SwingWorker;
 
 public class ZipUI extends javax.swing.JFrame {
 
     private Tarea tarea;
-    private final Zip zip;
+    //private final Zip zip;
+    private int isComprimed = 1;
+    private int progreso = 0;
+    public final List<String> files;
+    public final String directory;
     
-    public ZipUI(Zip zip) {
+    public ZipUI(List<String> files, String directory) {
         initComponents();
+        this.files = files;
+        this.directory = directory;
         barraProgreso.setStringPainted(true);
-        this.zip = zip;
+        barraProgreso.setMaximum(this.files.size());
     }
+
 
     private class Tarea extends SwingWorker<Void, Void>{
 
+        
         @Override
         protected Void doInBackground() throws Exception {
-            zip.comprimir();
+            
+            //isComprimed = zip.comprimir();
+             int BUFFER_SIZE = 1024;
+            try {
+                // Objeto para referenciar a los archivos que queremos comprimir
+                BufferedInputStream origin = null;
+                // Objeto para referenciar el archivo zip de salida
+                File m = new File(directory);
+
+                FileOutputStream dest = new FileOutputStream(directory + ".zip");
+                ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest));
+                // Buffer de transferencia para almacenar datos a comprimir
+                byte[] data = new byte[BUFFER_SIZE];
+                Iterator i = files.iterator();
+                
+                while(i.hasNext()) {
+                    barraProgreso.setValue(progreso);
+                    String filepath = (String) i.next();
+                    File file = new File(filepath);
+                    FileInputStream fi = new FileInputStream(filepath);
+                    origin = new BufferedInputStream(fi, BUFFER_SIZE);
+                    ZipEntry entry = new ZipEntry( file.getName() );
+                    out.putNextEntry( entry );
+                    // Leemos datos desde el archivo origen y se envían al archivo destino
+                    int count;
+                    while((count = origin.read(data, 0, BUFFER_SIZE)) != -1) {
+                        out.write(data, 0, count);
+                    }
+                    // Cerramos el archivo origen, ya enviado a comprimir
+                    origin.close();
+                    progreso++;
+                }
+                // Cerramos el archivo zip
+                out.close();
+                barraProgreso.setValue(progreso);
+                isComprimed = 0;
+            } catch(IOException e){
+                e.printStackTrace();
+                isComprimed = -1;
+            }   
             return null;
         }
         
         @Override
         public void done(){
-            titleLabel.setText("Tarea terminada o cancelada");
+            if(isComprimed == 0){
+                titleLabel.setText("Tarea terminada");
+            }else if ( isComprimed == -1){
+                titleLabel.setText("Tarea cancelada");
+            }
             cancelarButton.setEnabled(false);
         }
         
@@ -121,6 +182,7 @@ public class ZipUI extends javax.swing.JFrame {
 
     private void cancelarButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelarButtonActionPerformed
         tarea.cancel(true);
+        isComprimed = -2;
         comenzarButton.setEnabled(true);
         cancelarButton.setEnabled(false);
     }//GEN-LAST:event_cancelarButtonActionPerformed

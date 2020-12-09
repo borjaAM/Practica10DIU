@@ -2,6 +2,7 @@ package com.mycompany.practica10.diu;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -18,22 +19,25 @@ public class Zip {
         this.directory = directory;
     }
     
-    public void comprimir(){
-        int BUFFER_SIZE = 200;
+    public int comprimir(){
+        int BUFFER_SIZE = 1024;
         try {
             // Objeto para referenciar a los archivos que queremos comprimir
             BufferedInputStream origin = null;
             // Objeto para referenciar el archivo zip de salida
+            File m = new File(directory);
+            
             FileOutputStream dest = new FileOutputStream(directory + ".zip");
             ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest));
             // Buffer de transferencia para almacenar datos a comprimir
             byte[] data = new byte[BUFFER_SIZE];
             Iterator i = files.iterator();
             while(i.hasNext()) {
-                String filename = (String)i.next();
-                FileInputStream fi = new FileInputStream(filename);
+                String filepath = (String) i.next();
+                File file = new File(filepath);
+                FileInputStream fi = new FileInputStream(filepath);
                 origin = new BufferedInputStream(fi, BUFFER_SIZE);
-                ZipEntry entry = new ZipEntry( filename );
+                ZipEntry entry = new ZipEntry( file.getName() );
                 out.putNextEntry( entry );
                 // Leemos datos desde el archivo origen y se envían al archivo destino
                 int count;
@@ -45,8 +49,11 @@ public class Zip {
             }
             // Cerramos el archivo zip
             out.close();
+            return 0;
         } catch(IOException e){
             e.printStackTrace();
+            return -1;
         }
     }
+    
 }
