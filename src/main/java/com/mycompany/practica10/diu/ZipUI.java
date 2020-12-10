@@ -196,7 +196,9 @@ public class ZipUI extends javax.swing.JFrame {
         } catch (IOException ex) {
             Logger.getLogger(ZipUI.class.getName()).log(Level.SEVERE, null, ex);
         }
-        this.dispose();
+        titleLabel.setText("Tarea cancelada");
+        barraProgreso.setValue(0);
+        progreso = 0;
     }//GEN-LAST:event_cancelarButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JProgressBar barraProgreso;
